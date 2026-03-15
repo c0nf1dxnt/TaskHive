@@ -8,29 +8,31 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "projects")
 @Getter
 @Setter
-public class User {
+public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "user_id")
-    private UUID userId;
+    @Column(name = "project_id")
+    private UUID projectId;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+    @ManyToOne
+    @JoinColumn(name = "workspace_id", nullable = false, updatable = false)
+    private Workspace workspace;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    @ManyToOne
+    @JoinColumn(name = "creator_id", nullable = false, updatable = false)
+    private User creator;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive;
+    @Column(nullable = false)
+    private String name;
+
+    @Column
+    private String description;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "display_name")
-    private String displayName;
 
     @PrePersist
     protected void onCreate() {
