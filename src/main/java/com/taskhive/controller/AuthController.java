@@ -2,9 +2,11 @@ package com.taskhive.controller;
 
 import com.taskhive.dto.UserRegistrationDto;
 import com.taskhive.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +24,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute UserRegistrationDto dto, Model model) {
+    public String registerUser(@Valid @ModelAttribute UserRegistrationDto dto, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            return "register";
+        }
+
         try {
             userService.register(dto);
         } catch (RuntimeException e) {
