@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Workspaces</title>
+</head>
+<body>
+<h1>My Workspaces</h1>
+<a href="/workspaces/create">Create Workspace</a>
+<div th:each="workspace : ${workspaces}">
+    <h3 th:text="${workspace.name}"></h3>
+</div>
+<p th:if="${#lists.isEmpty(workspaces)}">No workspaces yet.</p>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
+</body>
+</html>

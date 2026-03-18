@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Workspace</title>
+</head>
+<body>
+<h1>Create Workspace</h1>
+<form th:action="@{/workspaces/create}" th:object="${workspaceDto}" method="post">
+    <div>
+        <label>Name:</label>
+        <input type="text" th:field="*{name}">
+        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"></span>
+    </div>
+    <button type="submit">Create</button>
+</form>
+<a href="/workspaces">Back to workspaces</a>
+</body>
+</html>
