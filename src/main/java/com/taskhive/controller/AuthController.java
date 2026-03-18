@@ -44,19 +44,4 @@ public class AuthController {
         model.addAttribute("userLoginDto", new UserLoginDto());
         return "login";
     }
-
-    @PostMapping("/login")
-    public String loginUser(@Valid @ModelAttribute UserLoginDto dto, BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            return "login";
-        }
-
-        try {
-            userService.login(dto);
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            return "login";
-        }
-        return "redirect:/";
-    }
 }
