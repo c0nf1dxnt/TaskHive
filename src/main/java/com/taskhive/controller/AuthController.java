@@ -1,5 +1,6 @@
 package com.taskhive.controller;
 
+import com.taskhive.dto.UserLoginDto;
 import com.taskhive.dto.UserRegistrationDto;
 import com.taskhive.service.UserService;
 import jakarta.validation.Valid;
@@ -36,5 +37,26 @@ public class AuthController {
             return "register";
         }
         return "redirect:/login";
+    }
+
+    @GetMapping("/login")
+    public String showLoginForm(Model model) {
+        model.addAttribute("userLoginDto", new UserLoginDto());
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String loginUser(@Valid @ModelAttribute UserLoginDto dto, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            return "login";
+        }
+
+        try {
+            userService.login(dto);
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            return "login";
+        }
+        return "redirect:/";
     }
 }
