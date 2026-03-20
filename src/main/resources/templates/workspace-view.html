@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Workspace</title>
+</head>
+<body>
+<h1>Projects</h1>
+<a th:href="@{/workspaces/{id}/projects/create(id=${workspaceId})}">Create Project</a>
+<div th:each="project : ${projects}">
+    <h3 th:text="${project.name}"></h3>
+    <p th:text="${project.description}"></p>
+</div>
+<p th:if="${#lists.isEmpty(projects)}">No projects yet.</p>
+<a href="/workspaces">Back to workspaces</a>
+</body>
+</html>

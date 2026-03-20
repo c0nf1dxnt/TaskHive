@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Project</title>
+</head>
+<body>
+<h1>Create Project</h1>
+<form th:action="@{/workspaces/{id}/projects/create(id=${workspaceId})}" th:object="${projectDto}" method="post">
+    <div>
+        <label>Name:</label>
+        <input type="text" th:field="*{name}">
+        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"></span>
+    </div>
+    <div>
+        <label>Description:</label>
+        <textarea th:field="*{description}"></textarea>
+    </div>
+    <button type="submit">Create</button>
+</form>
+<a th:href="@{/workspaces/{id}(id=${workspaceId})}">Back</a>
+</body>
+</html>
