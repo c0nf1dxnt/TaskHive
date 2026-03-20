@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Task</title>
+</head>
+<body>
+<h1>Create Task</h1>
+<form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/create(wId=${workspaceId}, pId=${projectId})}" th:object="${taskDto}" method="post">
+    <div>
+        <label>Title:</label>
+        <input type="text" th:field="*{title}">
+        <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" style="color: red;"></span>
+    </div>
+    <div>
+        <label>Description:</label>
+        <textarea th:field="*{description}"></textarea>
+    </div>
+    <div>
+        <label>Priority:</label>
+        <select th:field="*{priority}">
+            <option value="">-- Select --</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+        </select>
+    </div>
+    <button type="submit">Create</button>
+</form>
+<a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${projectId})}">Back</a>
+</body>
+</html>

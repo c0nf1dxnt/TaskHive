@@ -14,8 +14,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
+
     private final ProjectRepository projectRepository;
+
     private final UserRepository userRepository;
+
     private final WorkspaceRepository workspaceRepository;
 
     public Project create(ProjectDto dto, UUID workspaceId, String email) {
