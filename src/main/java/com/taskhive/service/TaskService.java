@@ -2,10 +2,8 @@ package com.taskhive.service;
 
 import com.taskhive.dto.TaskDto;
 import com.taskhive.model.Task;
-import com.taskhive.repository.ProjectRepository;
-import com.taskhive.repository.TaskRepository;
-import com.taskhive.repository.TaskStatusRepository;
-import com.taskhive.repository.UserRepository;
+import com.taskhive.model.TaskStatus;
+import com.taskhive.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +21,7 @@ public class TaskService {
     private final UserRepository userRepository;
 
     private final TaskStatusRepository taskStatusRepository;
+    private final TaskStateTransitionRepository taskStateTransitionRepository;
 
     public Task create(TaskDto dto, UUID projectId, String email) {
         var project = projectRepository.findById(projectId)
@@ -48,5 +47,22 @@ public class TaskService {
 
     public List<Task> getTasksByProjectId(UUID projectId) {
         return taskRepository.findByProjectProjectId(projectId);
+    }
+
+    public void changeStatus(UUID taskId, String newStatusName, String email) {
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        var status = taskStatusRepository.findByName(newStatusName)
+                .orElseThrow(() -> new RuntimeException("Status not found"));
+
+        var isTransitionAllowed = taskStateTransitionRepository.existsByFromStatusAndToStatus(task.getStatus(), status);
+
+        if (isTransitionAllowed) {
+            task.setStatus(status);
+            taskRepository.save(task);
+        } else {
+            throw new RuntimeException("Incorrect task status transition attempt");
+        }
     }
 }
