@@ -1,19 +1,38 @@
 package com.taskhive.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.time.Instant;
 
 @Entity
-@Table(name = "tags")
+@Table(name = "tags", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"workspace_id", "name"})
+})
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Tag {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tag_seq")
+    @SequenceGenerator(name = "tag_seq", sequenceName = "tags_seq", allocationSize = 50)
     @Column(name = "tag_id")
     private Long tagId;
 
-    @Column(nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_id", nullable = false, updatable = false)
+    private Workspace workspace;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+    }
 }

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.Principal;
-import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping("/workspaces/{workspaceId}/projects/{projectId}")
-    public String list(@PathVariable UUID workspaceId, @PathVariable UUID projectId, Model model) {
+    public String list(@PathVariable Long workspaceId, @PathVariable Long projectId, Model model) {
         var tasks = taskService.getTasksByProjectId(projectId);
         model.addAttribute("tasks", tasks);
         model.addAttribute("projectId", projectId);
@@ -31,7 +30,7 @@ public class TaskController {
     }
 
     @GetMapping("/workspaces/{workspaceId}/projects/{projectId}/tasks/create")
-    public String showCreateForm(@PathVariable UUID workspaceId, @PathVariable UUID projectId, Model model) {
+    public String showCreateForm(@PathVariable Long workspaceId, @PathVariable Long projectId, Model model) {
         model.addAttribute("taskDto", new TaskDto());
         model.addAttribute("projectId", projectId);
         model.addAttribute("workspaceId", workspaceId);
@@ -39,7 +38,7 @@ public class TaskController {
     }
 
     @PostMapping("/workspaces/{workspaceId}/projects/{projectId}/tasks/create")
-    public String create(@PathVariable UUID workspaceId, @PathVariable UUID projectId, @Valid @ModelAttribute TaskDto dto,  BindingResult result, Model model, Principal principal) {
+    public String create(@PathVariable Long workspaceId, @PathVariable Long projectId, @Valid @ModelAttribute TaskDto dto,  BindingResult result, Model model, Principal principal) {
         if (result.hasErrors()) {
             model.addAttribute("projectId", projectId);
             model.addAttribute("workspaceId", workspaceId);

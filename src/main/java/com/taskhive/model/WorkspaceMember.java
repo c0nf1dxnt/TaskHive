@@ -1,27 +1,29 @@
 package com.taskhive.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.Instant;
 
 @Entity
 @Table(name = "workspace_members")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class WorkspaceMember {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "workspace_member_seq")
+    @SequenceGenerator(name = "workspace_member_seq", sequenceName = "workspace_members_seq", allocationSize = 50)
     @Column(name = "workspace_member_id")
-    private UUID workspaceMemberId;
+    private Long workspaceMemberId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false, updatable = false)
     private Workspace workspace;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
@@ -34,13 +36,13 @@ public class WorkspaceMember {
     private WorkspaceMemberStatus status;
 
     @Column(name = "valid_from", nullable = false, updatable = false)
-    private LocalDateTime validFrom;
+    private Instant validFrom;
 
     @Column(name = "valid_to")
-    private LocalDateTime validTo;
+    private Instant validTo;
 
     @PrePersist
     protected void onCreate() {
-        validFrom = LocalDateTime.now();
+        validFrom = Instant.now();
     }
 }

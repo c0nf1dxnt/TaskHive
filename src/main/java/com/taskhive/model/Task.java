@@ -2,37 +2,39 @@ package com.taskhive.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.Instant;
 
 @Entity
-@Setter
+@Table(name = "tasks")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tasks")
 public class Task {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq")
+    @SequenceGenerator(name = "task_seq", sequenceName = "tasks_seq", allocationSize = 50)
     @Column(name = "task_id")
-    private UUID taskId;
+    private Long taskId;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false, updatable = false)
     private Project project;
 
-    @ManyToOne
-    @JoinColumn(name = "creator_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_id", nullable = false, updatable = false)
     private User creator;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignee_id")
     private User assignee;
 
-    @ManyToOne
-    @JoinColumn(nullable = false, name = "status_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id", nullable = false)
     private TaskStatus status;
 
     @Enumerated(EnumType.STRING)
@@ -41,25 +43,28 @@ public class Task {
     @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "due_date")
-    private LocalDateTime dueDate;
+    private Instant dueDate;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        createdAt = Instant.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = Instant.now();
     }
 }

@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +20,7 @@ public class ProjectService {
 
     private final WorkspaceRepository workspaceRepository;
 
-    public Project create(ProjectDto dto, UUID workspaceId, String email) {
+    public Project create(ProjectDto dto, Long workspaceId, String email) {
         var creator = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -38,7 +37,7 @@ public class ProjectService {
         return projectRepository.save(project);
     }
 
-    public List<Project> getProjectsByWorkspace(UUID workspaceId) {
+    public List<Project> getProjectsByWorkspace(Long workspaceId) {
         return projectRepository.findByWorkspaceWorkspaceId(workspaceId);
     }
 }

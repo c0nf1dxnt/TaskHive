@@ -1,44 +1,47 @@
 package com.taskhive.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "task_audit_logs")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TaskAuditLog {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_audit_log_seq")
+    @SequenceGenerator(name = "task_audit_log_seq", sequenceName = "task_audit_logs_seq", allocationSize = 50)
     @Column(name = "log_id")
     private Long logId;
 
-    @ManyToOne
-    @JoinColumn(name = "task_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id", nullable = false, updatable = false)
     private Task task;
 
-    @ManyToOne
-    @JoinColumn(name = "changed_by_user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "changed_by_user_id", nullable = false, updatable = false)
     private User changedBy;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "change_type", nullable = false)
+    @Column(name = "change_type", nullable = false, updatable = false)
     private TaskChangeType changeType;
 
-    @Column(name = "old_value")
+    @Column(name = "old_value", columnDefinition = "TEXT", updatable = false)
     private String oldValue;
 
-    @Column(name = "new_value")
+    @Column(name = "new_value", columnDefinition = "TEXT", updatable = false)
     private String newValue;
 
     @Column(name = "changed_at", nullable = false, updatable = false)
-    private LocalDateTime changedAt;
+    private Instant changedAt;
 
     @PrePersist
     protected void onCreate() {
-        changedAt = LocalDateTime.now();
+        changedAt = Instant.now();
     }
 }

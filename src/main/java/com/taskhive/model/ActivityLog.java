@@ -1,49 +1,56 @@
 package com.taskhive.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "activity_logs")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ActivityLog {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "activity_log_seq")
+    @SequenceGenerator(name = "activity_log_seq", sequenceName = "activity_logs_seq", allocationSize = 50)
     @Column(name = "log_id")
     private Long logId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "action_type", nullable = false)
+    @Column(name = "action_type", nullable = false, updatable = false)
     private ActivityType actionType;
 
-    @Column
+    @Column(columnDefinition = "TEXT", updatable = false)
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "workspace_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_user_id", updatable = false)
+    private User targetUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_id", updatable = false)
     private Workspace workspace;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", updatable = false)
     private Project project;
 
-    @ManyToOne
-    @JoinColumn(name = "task_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id", updatable = false)
     private Task task;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        createdAt = Instant.now();
     }
 }

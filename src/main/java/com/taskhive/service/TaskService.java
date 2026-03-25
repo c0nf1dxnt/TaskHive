@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,14 +22,15 @@ public class TaskService {
     private final TaskStatusRepository taskStatusRepository;
     private final TaskStateTransitionRepository taskStateTransitionRepository;
 
-    public Task create(TaskDto dto, UUID projectId, String email) {
+    public Task create(TaskDto dto, Long projectId, String email) {
         var project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
         var creator = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var status = taskStatusRepository.findByName("BACKLOG")
+        var workspace = project.getWorkspace();
+        var status = taskStatusRepository.findByNameAndWorkspace("BACKLOG", workspace)
                 .orElseThrow(() -> new RuntimeException("Status not found"));
 
         var task = Task.builder()
@@ -45,15 +45,16 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public List<Task> getTasksByProjectId(UUID projectId) {
+    public List<Task> getTasksByProjectId(Long projectId) {
         return taskRepository.findByProjectProjectId(projectId);
     }
 
-    public void changeStatus(UUID taskId, String newStatusName, String email) {
+    public void changeStatus(Long taskId, String newStatusName, String email) {
         var task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        var status = taskStatusRepository.findByName(newStatusName)
+        var workspace = task.getProject().getWorkspace();
+        var status = taskStatusRepository.findByNameAndWorkspace(newStatusName, workspace)
                 .orElseThrow(() -> new RuntimeException("Status not found"));
 
         var isTransitionAllowed = taskStateTransitionRepository.existsByFromStatusAndToStatus(task.getStatus(), status);

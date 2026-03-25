@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.Principal;
-import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,7 +20,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping("/workspaces/{workspaceId}")
-    public String show(@PathVariable UUID workspaceId, Model model) {
+    public String show(@PathVariable Long workspaceId, Model model) {
         var projects = projectService.getProjectsByWorkspace(workspaceId);
         model.addAttribute("projects", projects);
         model.addAttribute("workspaceId", workspaceId);
@@ -29,14 +28,14 @@ public class ProjectController {
     }
 
     @GetMapping("/workspaces/{workspaceId}/projects/create")
-    public String showCreateForm(@PathVariable UUID workspaceId, Model model) {
+    public String showCreateForm(@PathVariable Long workspaceId, Model model) {
         model.addAttribute("projectDto", new ProjectDto());
         model.addAttribute("workspaceId", workspaceId);
         return "project-create";
     }
 
     @PostMapping("/workspaces/{workspaceId}/projects/create")
-    public String create(@PathVariable UUID workspaceId, @Valid @ModelAttribute ProjectDto dto, BindingResult result, Model model, Principal principal) {
+    public String create(@PathVariable Long workspaceId, @Valid @ModelAttribute ProjectDto dto, BindingResult result, Model model, Principal principal) {
         if (result.hasErrors()) {
             model.addAttribute("workspaceId", workspaceId);
             return "project-create";

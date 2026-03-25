@@ -4,8 +4,7 @@ import com.taskhive.model.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface TaskRepository extends JpaRepository<Task, UUID> {
-    List<Task> findByProjectProjectId(UUID projectId);
+public interface TaskRepository extends JpaRepository<Task, Long> {
+    List<Task> findByProjectProjectId(Long projectId);
 }

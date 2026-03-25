@@ -2,35 +2,48 @@ package com.taskhive.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.Instant;
 
 @Entity
 @Table(name = "workspaces")
-@Setter
+@SQLRestriction("deleted_at IS NULL")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Workspace {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "workspace_seq")
+    @SequenceGenerator(name = "workspace_seq", sequenceName = "workspaces_seq", allocationSize = 50)
     @Column(name = "workspace_id")
-    private UUID workspaceId;
+    private Long workspaceId;
 
     @Column(name = "workspace_name", nullable = false)
     private String name;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        createdAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
     }
 }

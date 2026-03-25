@@ -1,24 +1,40 @@
 package com.taskhive.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "user_global_roles")
-@Setter
 @Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserGlobalRole {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_global_role_seq")
+    @SequenceGenerator(name = "user_global_role_seq", sequenceName = "user_global_roles_seq", allocationSize = 50)
     @Column(name = "user_global_role_id")
     private Long userGlobalRoleId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "global_role_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "global_role_id", nullable = false, updatable = false)
     private GlobalRole globalRole;
+
+    @Column(name = "valid_from", nullable = false, updatable = false)
+    private Instant validFrom;
+
+    @Column(name = "valid_to")
+    private Instant validTo;
+
+    @PrePersist
+    protected void onCreate() {
+        validFrom = Instant.now();
+    }
 }
