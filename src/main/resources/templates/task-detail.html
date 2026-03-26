@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${task.project.projectKey} + '-' + ${task.taskNumber} + ' ' + ${task.title}">Task</title>
+</head>
+<body>
+<h1>
+    <span th:text="${task.project.projectKey} + '-' + ${task.taskNumber}"></span>:
+    <span th:text="${task.title}"></span>
+</h1>
+
+<p><strong>Status:</strong> <span th:text="${task.status.name}"></span></p>
+<p><strong>Priority:</strong> <span th:text="${task.priority != null ? task.priority : 'None'}"></span></p>
+<p><strong>Assignee:</strong> <span th:text="${task.assignee != null ? task.assignee.email : 'Unassigned'}"></span></p>
+<p><strong>Creator:</strong> <span th:text="${task.creator.email}"></span></p>
+<p th:if="${task.description != null}"><strong>Description:</strong><br/> <span th:text="${task.description}"></span></p>
+<p><strong>Created:</strong> <span th:text="${task.createdAt}"></span></p>
+
+<hr/>
+
+<h3>Change Status</h3>
+<div th:if="${!#lists.isEmpty(allowedStatuses)}">
+    <form th:each="status : ${allowedStatuses}"
+          th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/status(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+          method="post" style="display: inline;">
+        <input type="hidden" name="statusId" th:value="${status.statusId}"/>
+        <button type="submit" th:text="${status.name}"></button>
+    </form>
+</div>
+<p th:if="${#lists.isEmpty(allowedStatuses)}">No available transitions.</p>
+
+<hr/>
+
+<a th:href="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/edit(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}">Edit Task</a>
+|
+<form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/delete(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+      method="post" style="display: inline;">
+    <button type="submit" onclick="return confirm('Delete this task?')">Delete Task</button>
+</form>
+
+<hr/>
+
+<h3>Comments</h3>
+<form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/comments(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+      th:object="${commentDto}" method="post">
+    <textarea th:field="*{content}" rows="3" cols="60" placeholder="Write a comment..."></textarea>
+    <br/>
+    <button type="submit">Add Comment</button>
+</form>
+
+<div th:each="comment : ${comments}" style="border: 1px solid #ccc; padding: 8px; margin: 8px 0;">
+    <strong th:text="${comment.user.email}"></strong>
+    <small th:text="${comment.createdAt}"></small>
+    <form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/comments/{cId}/delete(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId}, cId=${comment.commentId})}"
+          method="post" style="display: inline; float: right;">
+        <button type="submit" onclick="return confirm('Delete comment?')">x</button>
+    </form>
+    <p th:text="${comment.content}"></p>
+</div>
+
+<p th:if="${#lists.isEmpty(comments)}">No comments yet.</p>
+
+<hr/>
+<a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${projectId})}">Back to tasks</a>
+</body>
+</html>

@@ -7,7 +7,9 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.Instant;
 
 @Entity
-@Table(name = "projects")
+@Table(name = "projects", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"workspace_id", "project_key"})
+})
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
@@ -31,6 +33,9 @@ public class Project {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "project_key", nullable = false, length = 10)
+    private String projectKey;
 
     @Column(columnDefinition = "TEXT")
     private String description;

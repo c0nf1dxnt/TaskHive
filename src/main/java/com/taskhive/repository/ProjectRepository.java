@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByWorkspaceWorkspaceId(Long workspaceId);
+
+    boolean existsByWorkspaceWorkspaceIdAndProjectKey(Long workspaceId, String projectKey);
 }

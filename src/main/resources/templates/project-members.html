@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Project Members</title>
+</head>
+<body>
+<h1 th:text="'Members — ' + ${project.name}">Members</h1>
+
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+
+<h3>Add Member</h3>
+<form th:action="@{/workspaces/{wId}/projects/{pId}/members(wId=${workspaceId}, pId=${projectId})}"
+      th:object="${memberDto}" method="post">
+    <input type="email" th:field="*{email}" placeholder="user@example.com"/>
+    <button type="submit">Add</button>
+</form>
+
+<h3>Current Members</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Since</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="member : ${members}">
+            <td th:text="${member.user.email}"></td>
+            <td th:text="${member.role}"></td>
+            <td th:text="${member.validFrom}"></td>
+            <td>
+                <form th:if="${member.role.name() != 'ADMIN'}"
+                      th:action="@{/workspaces/{wId}/projects/{pId}/members/{mId}/remove(wId=${workspaceId}, pId=${projectId}, mId=${member.projectMemberId})}"
+                      method="post" style="display: inline;">
+                    <button type="submit" onclick="return confirm('Remove this member?')">Remove</button>
+                </form>
+                <span th:if="${member.role.name() == 'ADMIN'}">Admin</span>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${projectId})}">Back to tasks</a>
+</body>
+</html>

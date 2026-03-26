@@ -1,13 +1,13 @@
 package com.taskhive.service;
 
 import com.taskhive.dto.ProjectDto;
-import com.taskhive.model.Project;
-import com.taskhive.repository.ProjectRepository;
-import com.taskhive.repository.UserRepository;
-import com.taskhive.repository.WorkspaceRepository;
+import com.taskhive.model.*;
+import com.taskhive.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -15,11 +15,11 @@ import java.util.List;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
-
     private final UserRepository userRepository;
-
     private final WorkspaceRepository workspaceRepository;
+    private final ProjectMemberRepository projectMemberRepository;
 
+    @Transactional
     public Project create(ProjectDto dto, Long workspaceId, String email) {
         var creator = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -27,17 +27,79 @@ public class ProjectService {
         var workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new RuntimeException("Workspace not found"));
 
+        if (projectRepository.existsByWorkspaceWorkspaceIdAndProjectKey(workspaceId, dto.getProjectKey())) {
+            throw new RuntimeException("Project key already exists in this workspace");
+        }
+
         var project = Project.builder()
                 .name(dto.getName())
+                .projectKey(dto.getProjectKey())
                 .description(dto.getDescription())
                 .creator(creator)
                 .workspace(workspace)
                 .build();
 
-        return projectRepository.save(project);
+        project = projectRepository.save(project);
+
+        addCreatorAsMember(project, creator);
+
+        return project;
+    }
+
+    public Project getById(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
     public List<Project> getProjectsByWorkspace(Long workspaceId) {
         return projectRepository.findByWorkspaceWorkspaceId(workspaceId);
+    }
+
+    public List<ProjectMember> getActiveMembers(Long projectId) {
+        var project = getById(projectId);
+        return projectMemberRepository.findByProjectAndValidToIsNull(project);
+    }
+
+    @Transactional
+    public void addMember(Long projectId, String email, ProjectRole role) {
+        var project = getById(projectId);
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        var existing = projectMemberRepository
+                .findByProjectAndUserAndValidToIsNull(project, user);
+
+        if (existing.isPresent()) {
+            throw new RuntimeException("User is already a project member");
+        }
+
+        var member = ProjectMember.builder()
+                .project(project)
+                .user(user)
+                .role(role)
+                .status(ProjectMemberStatus.ACTIVE)
+                .build();
+
+        projectMemberRepository.save(member);
+    }
+
+    @Transactional
+    public void removeMember(Long memberId) {
+        var member = projectMemberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+
+        member.setStatus(ProjectMemberStatus.REMOVED);
+        member.setValidTo(Instant.now());
+        projectMemberRepository.save(member);
+    }
+
+    private void addCreatorAsMember(Project project, User creator) {
+        var member = ProjectMember.builder()
+                .project(project)
+                .user(creator)
+                .role(ProjectRole.ADMIN)
+                .status(ProjectMemberStatus.ACTIVE)
+                .build();
+        projectMemberRepository.save(member);
     }
 }

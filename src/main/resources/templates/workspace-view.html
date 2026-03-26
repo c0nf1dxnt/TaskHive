@@ -6,10 +6,29 @@
 <body>
 <h1>Projects</h1>
 <a th:href="@{/workspaces/{id}/projects/create(id=${workspaceId})}">Create Project</a>
-<div th:each="project : ${projects}">
-    <a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${project.projectId})}" th:text="${project.name}"></a>
-    <p th:text="${project.description}"></p>
-</div>
+|
+<a th:href="@{/workspaces/{id}/members(id=${workspaceId})}">Members</a>
+
+<table th:if="${!#lists.isEmpty(projects)}">
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="project : ${projects}">
+            <td>
+                <a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${project.projectId})}"
+                   th:text="${project.projectKey}"></a>
+            </td>
+            <td th:text="${project.name}"></td>
+            <td th:text="${project.description}"></td>
+        </tr>
+    </tbody>
+</table>
+
 <p th:if="${#lists.isEmpty(projects)}">No projects yet.</p>
 <a href="/workspaces">Back to workspaces</a>
 </body>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${project.name} + ' — Tasks'">Tasks</title>
+</head>
+<body>
+<h1 th:text="${project.name} + ' (' + ${project.projectKey} + ')'">Project</h1>
+
+<a th:href="@{/workspaces/{wId}/projects/{pId}/tasks/create(wId=${workspaceId}, pId=${projectId})}">Create Task</a>
+|
+<a th:href="@{/workspaces/{wId}/projects/{pId}/members(wId=${workspaceId}, pId=${projectId})}">Members</a>
+
+<table th:if="${!#lists.isEmpty(tasks)}">
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Assignee</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="task : ${tasks}">
+            <td>
+                <a th:href="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+                   th:text="${project.projectKey} + '-' + ${task.taskNumber}"></a>
+            </td>
+            <td th:text="${task.title}"></td>
+            <td th:text="${task.status.name}"></td>
+            <td th:text="${task.priority}"></td>
+            <td th:text="${task.assignee != null ? task.assignee.email : 'Unassigned'}"></td>
+        </tr>
+    </tbody>
+</table>
+
+<p th:if="${#lists.isEmpty(tasks)}">No tasks yet.</p>
+
+<a th:href="@{/workspaces/{id}(id=${workspaceId})}">Back to projects</a>
+</body>
+</html>

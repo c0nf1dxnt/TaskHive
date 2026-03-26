@@ -40,6 +40,9 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskPriority priority;
 
+    @Column(name = "task_number", nullable = false, updatable = false)
+    private Integer taskNumber;
+
     @Column(nullable = false)
     private String title;
 

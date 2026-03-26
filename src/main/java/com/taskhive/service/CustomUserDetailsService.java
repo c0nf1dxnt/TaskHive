@@ -1,30 +1,38 @@
 package com.taskhive.service;
 
+import com.taskhive.model.UserGlobalRole;
+import com.taskhive.repository.UserGlobalRoleRepository;
 import com.taskhive.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
+    private final UserGlobalRoleRepository userGlobalRoleRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return new User(
-                user.getEmail(),
-                user.getPasswordHash(),
-                Collections.emptyList());
+        if (!user.isActive()) {
+            throw new UsernameNotFoundException("User is deactivated");
+        }
+
+        var authorities = userGlobalRoleRepository.findByUserAndValidToIsNull(user)
+                .stream()
+                .map(UserGlobalRole::getGlobalRole)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
+                .toList();
+
+        return new User(user.getEmail(), user.getPasswordHash(), authorities);
     }
 }

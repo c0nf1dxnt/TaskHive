@@ -5,11 +5,17 @@
 </head>
 <body>
 <h1>Create Project</h1>
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
 <form th:action="@{/workspaces/{id}/projects/create(id=${workspaceId})}" th:object="${projectDto}" method="post">
     <div>
         <label>Name:</label>
-        <input type="text" th:field="*{name}">
+        <input type="text" th:field="*{name}"/>
         <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"></span>
+    </div>
+    <div>
+        <label>Project Key (e.g. PROJ, BACK):</label>
+        <input type="text" th:field="*{projectKey}" style="text-transform: uppercase;"/>
+        <span th:if="${#fields.hasErrors('projectKey')}" th:errors="*{projectKey}" style="color: red;"></span>
     </div>
     <div>
         <label>Description:</label>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Workspace Members</title>
+</head>
+<body>
+<h1 th:text="'Members — ' + ${workspace.name}">Members</h1>
+
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+
+<div th:if="${isAdmin}">
+    <h3>Add Member</h3>
+    <form th:action="@{/workspaces/{id}/members(id=${workspaceId})}" th:object="${memberDto}" method="post">
+        <input type="email" th:field="*{email}" placeholder="user@example.com"/>
+        <button type="submit">Add</button>
+    </form>
+</div>
+
+<h3>Current Members</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Since</th>
+            <th th:if="${isAdmin}">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="member : ${members}">
+            <td th:text="${member.user.email}"></td>
+            <td th:text="${member.role}"></td>
+            <td th:text="${member.validFrom}"></td>
+            <td th:if="${isAdmin}">
+                <form th:if="${member.role.name() != 'ADMIN'}"
+                      th:action="@{/workspaces/{wId}/members/{mId}/remove(wId=${workspaceId}, mId=${member.workspaceMemberId})}"
+                      method="post" style="display: inline;">
+                    <button type="submit" onclick="return confirm('Remove this member?')">Remove</button>
+                </form>
+                <span th:if="${member.role.name() == 'ADMIN'}">Owner</span>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/workspaces/{id}(id=${workspaceId})}">Back to workspace</a>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Task</title>
+</head>
+<body>
+<h1>Edit Task</h1>
+<form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/edit(wId=${workspaceId}, pId=${projectId}, tId=${taskId})}"
+      th:object="${taskEditDto}" method="post">
+    <div>
+        <label>Title:</label>
+        <input type="text" th:field="*{title}"/>
+        <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" style="color: red;"></span>
+    </div>
+    <div>
+        <label>Description:</label>
+        <textarea th:field="*{description}" rows="5" cols="60"></textarea>
+    </div>
+    <div>
+        <label>Priority:</label>
+        <select th:field="*{priority}">
+            <option value="">-- None --</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+        </select>
+    </div>
+    <div>
+        <label>Assignee email:</label>
+        <input type="email" th:field="*{assigneeEmail}"/>
+    </div>
+    <button type="submit">Save</button>
+</form>
+<a th:href="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}(wId=${workspaceId}, pId=${projectId}, tId=${taskId})}">Cancel</a>
+</body>
+</html>

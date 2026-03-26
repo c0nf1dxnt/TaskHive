@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>Workspaces</title>
 </head>
 <body>
 <h1>My Workspaces</h1>
 <a href="/workspaces/create">Create Workspace</a>
+|
+<a sec:authorize="hasRole('ADMIN')" href="/admin">Admin Panel</a>
+
 <div th:each="workspace : ${workspaces}">
     <a th:href="@{/workspaces/{id}(id=${workspace.workspaceId})}" th:text="${workspace.name}"></a>
 </div>

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -37,8 +38,67 @@ public class WorkspaceService {
         return workspace;
     }
 
+    public Workspace getById(Long workspaceId) {
+        return workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new RuntimeException("Workspace not found"));
+    }
+
+    public void checkMembership(Long workspaceId, String email) {
+        var workspace = getById(workspaceId);
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        workspaceMemberRepository.findByWorkspaceAndUserAndValidToIsNull(workspace, user)
+                .orElseThrow(() -> new RuntimeException("Access denied: not a workspace member"));
+    }
+
+    public WorkspaceMember getMembership(Long workspaceId, String email) {
+        var workspace = getById(workspaceId);
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return workspaceMemberRepository.findByWorkspaceAndUserAndValidToIsNull(workspace, user)
+                .orElse(null);
+    }
+
     public List<Workspace> getWorkspacesByEmail(String email) {
-        return workspaceRepository.findByOwnerEmail(email);
+        return workspaceRepository.findByActiveMemberEmail(email);
+    }
+
+    public List<WorkspaceMember> getActiveMembers(Long workspaceId) {
+        var workspace = getById(workspaceId);
+        return workspaceMemberRepository.findByWorkspaceAndValidToIsNull(workspace);
+    }
+
+    @Transactional
+    public void addMember(Long workspaceId, String email) {
+        var workspace = getById(workspaceId);
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        var existing = workspaceMemberRepository
+                .findByWorkspaceAndUserAndValidToIsNull(workspace, user);
+
+        if (existing.isPresent()) {
+            throw new RuntimeException("User is already a member");
+        }
+
+        var member = WorkspaceMember.builder()
+                .workspace(workspace)
+                .user(user)
+                .role(WorkspaceRole.MEMBER)
+                .status(WorkspaceMemberStatus.ACTIVE)
+                .build();
+
+        workspaceMemberRepository.save(member);
+    }
+
+    @Transactional
+    public void removeMember(Long memberId) {
+        var member = workspaceMemberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+
+        member.setStatus(WorkspaceMemberStatus.LEFT);
+        member.setValidTo(Instant.now());
+        workspaceMemberRepository.save(member);
     }
 
     private void addOwnerAsMember(Workspace workspace, User owner) {
