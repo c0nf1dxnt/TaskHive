@@ -18,6 +18,7 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final WorkspaceRepository workspaceRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @Transactional
     public Project create(ProjectDto dto, Long workspaceId, String email) {
@@ -40,21 +41,23 @@ public class ProjectService {
                 .build();
 
         project = projectRepository.save(project);
-
         addCreatorAsMember(project, creator);
 
         return project;
     }
 
+    @Transactional(readOnly = true)
     public Project getById(Long projectId) {
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
+    @Transactional(readOnly = true)
     public List<Project> getProjectsByWorkspace(Long workspaceId) {
         return projectRepository.findByWorkspaceWorkspaceId(workspaceId);
     }
 
+    @Transactional(readOnly = true)
     public List<ProjectMember> getActiveMembers(Long projectId) {
         var project = getById(projectId);
         return projectMemberRepository.findByProjectAndValidToIsNull(project);
@@ -66,21 +69,33 @@ public class ProjectService {
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var existing = projectMemberRepository
-                .findByProjectAndUserAndValidToIsNull(project, user);
+        var workspace = project.getWorkspace();
+        boolean alreadyWorkspaceMember = workspaceMemberRepository
+                .findByWorkspaceAndUserAndValidToIsNull(workspace, user)
+                .isPresent();
+        if (!alreadyWorkspaceMember) {
+            workspaceMemberRepository.save(WorkspaceMember.builder()
+                    .workspace(workspace)
+                    .user(user)
+                    .role(WorkspaceRole.MEMBER)
+                    .status(WorkspaceMemberStatus.ACTIVE)
+                    .build());
+        }
 
-        if (existing.isPresent()) {
+        var alreadyMember = projectMemberRepository
+                .findByProjectAndUserAndValidToIsNull(project, user)
+                .isPresent();
+
+        if (alreadyMember) {
             throw new RuntimeException("User is already a project member");
         }
 
-        var member = ProjectMember.builder()
+        projectMemberRepository.save(ProjectMember.builder()
                 .project(project)
                 .user(user)
                 .role(role)
                 .status(ProjectMemberStatus.ACTIVE)
-                .build();
-
-        projectMemberRepository.save(member);
+                .build());
     }
 
     @Transactional

@@ -28,6 +28,7 @@ public class ProjectController {
 
         var workspace = workspaceService.getById(workspaceId);
         var projects = projectService.getProjectsByWorkspace(workspaceId);
+
         model.addAttribute("workspace", workspace);
         model.addAttribute("projects", projects);
         model.addAttribute("workspaceId", workspaceId);
@@ -45,8 +46,7 @@ public class ProjectController {
 
     @PostMapping("/workspaces/{workspaceId}/projects/create")
     public String create(@PathVariable Long workspaceId, @Valid @ModelAttribute ProjectDto dto,
-                         BindingResult result, Model model, Principal principal,
-                         RedirectAttributes redirectAttributes) {
+                         BindingResult result, Model model, Principal principal) {
         workspaceService.checkMembership(workspaceId, principal.getName());
 
         if (result.hasErrors()) {
